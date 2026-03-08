@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>鼻出血风险动态列线图</title>
+<style>
+body {
+    font-family: Arial, "Microsoft YaHei";
+    margin: 40px;
+    background-color: #f8f9fa;
+}
+.container {
+    max-width: 650px;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+h2 {
+    text-align: center;
+}
+label {
+    display: inline-block;
+    width: 200px;
+    margin-top: 10px;
+}
+input[type=number] {
+    width: 80px;
+}
+button {
+    margin-top: 20px;
+    padding: 8px 20px;
+    font-size: 16px;
+}
+.result {
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 20px;
+    color: #d9534f;
+}
+.note {
+    margin-top: 20px;
+    font-size: 14px;
+    color: gray;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>术后鼻出血风险预测模型（动态列线图）</h2>
+
+<label>年龄（岁）：</label>
+<input type="number" id="age" value="50"><br>
+
+<label>术中颈内动脉损伤：</label>
+<input type="checkbox" id="intraop_ica_injury"><br>
+
+<label>鼻部疾病史：</label>
+<input type="checkbox" id="nasal_history"><br>
+
+<label>侵袭性垂体瘤：</label>
+<input type="checkbox" id="invasive_adenoma"><br>
+
+<label>抗凝药物使用史：</label>
+<input type="checkbox" id="anticoagulant_history"><br>
+
+<label>便秘：</label>
+<input type="checkbox" id="constipation"><br>
+
+<label>术后鼻腔冲洗：</label>
+<input type="checkbox" id="postop_irrigation"><br>
+
+<label>吸烟史：</label>
+<input type="checkbox" id="smoking"><br>
+
+<button onclick="calculate()">计算风险</button>
+
+<div class="result" id="result"></div>
+
+<div class="note">
+说明：本模型基于Logistic回归构建，截距设为 -2.0。预测结果用于科研参考，不作为临床唯一决策依据。
+</div>
+
+</div>
+
+<script>
+function calculate() {
+    var intercept = -2.0;
+    var age = parseFloat(document.getElementById("age").value) || 0;
+
+    var logit = intercept
+        + (-0.040821994520255166) * age
+        + (1.9629077254238845) * (document.getElementById("intraop_ica_injury").checked ? 1 : 0)
+        + (1.0818051703517284) * (document.getElementById("nasal_history").checked ? 1 : 0)
+        + (1.0473189942805592) * (document.getElementById("invasive_adenoma").checked ? 1 : 0)
+        + (2.6946271807700692) * (document.getElementById("anticoagulant_history").checked ? 1 : 0)
+        + (1.3480731482996928) * (document.getElementById("constipation").checked ? 1 : 0)
+        + (-1.8971199848858813) * (document.getElementById("postop_irrigation").checked ? 1 : 0)
+        + (0.9631743177730056) * (document.getElementById("smoking").checked ? 1 : 0);
+
+    var probability = 1 / (1 + Math.exp(-logit));
+
+    document.getElementById("result").innerHTML =
+        "预测鼻出血风险概率： " + (probability * 100).toFixed(2) + "%";
+}
+</script>
+
+</body>
+</html>
