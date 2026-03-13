@@ -1,86 +1,468 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>鼻出血风险动态列线图</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>术后鼻出血风险预测模型</title>
 <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #4f46e5;
+    --primary-light: #6366f1;
+    --danger: #dc2626;
+    --warning: #f59e0b;
+    --success: #10b981;
+    --bg: #f1f5f9;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+}
+
 body {
-    font-family: Arial, "Microsoft YaHei";
-    margin: 40px;
-    background-color: #f8f9fa;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 40px 20px;
+    line-height: 1.6;
 }
+
 .container {
-    max-width: 650px;
-    background: white;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    max-width: 720px;
+    margin: 0 auto;
 }
-h2 {
+
+.header {
     text-align: center;
+    margin-bottom: 30px;
+    color: white;
 }
-label {
-    display: inline-block;
-    width: 200px;
-    margin-top: 10px;
+
+.header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-input[type=number] {
-    width: 80px;
+
+.header p {
+    font-size: 14px;
+    opacity: 0.9;
 }
-button {
-    margin-top: 20px;
-    padding: 8px 20px;
+
+.card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    overflow: hidden;
+}
+
+.card-header {
+    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    padding: 24px 30px;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-body {
+    padding: 30px;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.form-group:hover {
+    border-color: var(--border);
+    background: #f1f5f9;
+}
+
+.form-group label {
+    font-size: 15px;
+    color: var(--text);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-group.protective label::before {
+    content: "🛡️";
     font-size: 16px;
 }
-.result {
-    font-size: 22px;
-    font-weight: bold;
-    margin-top: 20px;
-    color: #d9534f;
+
+.form-group.risk label::before {
+    content: "⚠️";
+    font-size: 16px;
 }
-.note {
-    margin-top: 20px;
+
+.age-input {
+    width: 100px;
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    text-align: center;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.age-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* Custom Toggle Switch */
+.toggle {
+    position: relative;
+    width: 52px;
+    height: 28px;
+    cursor: pointer;
+}
+
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #e2e8f0;
+    border-radius: 28px;
+    transition: 0.3s;
+}
+
+.toggle-slider::before {
+    content: "";
+    position: absolute;
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.toggle input:checked + .toggle-slider {
+    background: var(--primary);
+}
+
+.toggle input:checked + .toggle-slider::before {
+    transform: translateX(24px);
+}
+
+.toggle.protective input:checked + .toggle-slider {
+    background: var(--success);
+}
+
+.toggle.risk input:checked + .toggle-slider {
+    background: var(--danger);
+}
+
+.calculate-btn {
+    width: 100%;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+}
+
+.calculate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.5);
+}
+
+.calculate-btn:active {
+    transform: translateY(0);
+}
+
+.result-section {
+    margin-top: 24px;
+    padding: 24px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 16px;
+    text-align: center;
+    border: 2px solid var(--border);
+    display: none;
+}
+
+.result-section.show {
+    display: block;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.result-label {
     font-size: 14px;
-    color: gray;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.result-value {
+    font-size: 48px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.result-value.high {
+    background: linear-gradient(90deg, var(--danger) 0%, #ef4444 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.result-value.medium {
+    background: linear-gradient(90deg, var(--warning) 0%, #fbbf24 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.result-value.low {
+    background: linear-gradient(90deg, var(--success) 0%, #34d399 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.result-desc {
+    font-size: 15px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.risk-bar {
+    width: 100%;
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 6px;
+    margin-top: 16px;
+    overflow: hidden;
+    position: relative;
+}
+
+.risk-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 1s ease;
+    background: linear-gradient(90deg, var(--success) 0%, var(--warning) 50%, var(--danger) 100%);
+}
+
+.risk-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.footer-note {
+    margin-top: 20px;
+    padding: 16px;
+    background: #fef3c7;
+    border-radius: 12px;
+    border-left: 4px solid var(--warning);
+}
+
+.footer-note p {
+    font-size: 13px;
+    color: #92400e;
+    line-height: 1.6;
+}
+
+.footer-note strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #78350f;
+}
+
+@media (min-width: 640px) {
+    .form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
 }
 </style>
 </head>
 <body>
 <div class="container">
-<h2>术后鼻出血风险预测模型（动态列线图）</h2>
-
-<label>年龄（岁）：</label>
-<input type="number" id="age" value="50"><br>
-
-<label>术中颈内动脉损伤：</label>
-<input type="checkbox" id="intraop_ica_injury"><br>
-
-<label>鼻部疾病史：</label>
-<input type="checkbox" id="nasal_history"><br>
-
-<label>侵袭性垂体瘤：</label>
-<input type="checkbox" id="invasive_adenoma"><br>
-
-<label>抗凝药物使用史：</label>
-<input type="checkbox" id="anticoagulant_history"><br>
-
-<label>便秘：</label>
-<input type="checkbox" id="constipation"><br>
-
-<label>术后鼻腔冲洗：</label>
-<input type="checkbox" id="postop_irrigation"><br>
-
-<label>吸烟史：</label>
-<input type="checkbox" id="smoking"><br>
-
-<button onclick="calculate()">计算风险</button>
-
-<div class="result" id="result"></div>
-
-<div class="note">
-说明：本模型基于Logistic回归构建，截距设为 -2.0。预测结果用于科研参考，不作为临床唯一决策依据。
-</div>
-
+    
+<div class="header">
+        <h1>🔬 术后鼻出血风险预测</h1>
+        <p>基于Logistic回归的动态列线图模型</p>
+    </div>
+    
+<div class="card">
+        <div class="card-header">
+            <span>📋</span>
+            <span>患者信息录入</span>
+        </div>
+        
+<div class="card-body">
+            <div class="section-title">
+                <span>👤</span>
+                <span>基本信息</span>
+            </div>
+            
+<div class="form-grid">
+                <div class="form-group full-width">
+                    <label>年龄</label>
+                    <input type="number" id="age" class="age-input" value="50" min="0" max="120">
+                </div>
+            </div>
+            
+<div class="section-title">
+                <span>🏥</span>
+                <span>临床特征</span>
+            </div>
+            
+<div class="form-grid">
+                <div class="form-group risk">
+                    <label>术中颈内动脉损伤</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="intraop_ica_injury">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+<div class="form-group risk">
+                    <label>侵袭性垂体瘤</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="invasive_adenoma">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+<div class="form-group risk">
+                    <label>鼻部疾病史</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="nasal_history">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+<div class="form-group risk">
+                    <label>抗凝药物使用史</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="anticoagulant_history">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+<div class="form-group risk">
+                    <label>便秘</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="constipation">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+<div class="form-group risk">
+                    <label>吸烟史</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="smoking">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+<div class="form-group protective">
+                    <label>术后鼻腔冲洗</label>
+                    <label class="toggle protective">
+                        <input type="checkbox" id="postop_irrigation">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+<button class="calculate-btn" onclick="calculate()">
+                <span>🧮</span>
+                <span>计算风险概率</span>
+            </button>
+            
+<div class="result-section" id="resultSection">
+                <div class="result-label">预测鼻出血风险概率</div>
+                <div class="result-value" id="resultValue">0%</div>
+                <div class="result-desc" id="resultDesc">风险等级评估</div>
+                <div class="risk-bar">
+                    <div class="risk-bar-fill" id="riskBar" style="width: 0%"></div>
+                </div>
+                <div class="risk-bar-labels">
+                    <span>低风险</span>
+                    <span>中风险</span>
+                    <span>高风险</span>
+                </div>
+            </div>
+            
+<div class="footer-note">
+                <p><strong>⚠️ 免责声明</strong>本模型基于Logistic回归构建，截距设为 -2.0。预测结果仅供科研参考，不作为临床决策的唯一依据。实际诊疗请结合患者具体情况综合判断。</p>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -99,10 +481,47 @@ function calculate() {
         + (0.9631743177730056) * (document.getElementById("smoking").checked ? 1 : 0);
 
     var probability = 1 / (1 + Math.exp(-logit));
-
-    document.getElementById("result").innerHTML =
-        "预测鼻出血风险概率： " + (probability * 100).toFixed(2) + "%";
+    var percentage = probability * 100;
+    
+    // Update result section
+    var resultSection = document.getElementById("resultSection");
+    resultSection.classList.add("show");
+    
+    // Update value with animation
+    var resultValue = document.getElementById("resultValue");
+    resultValue.textContent = percentage.toFixed(2) + "%";
+    
+    // Set color based on risk level
+    resultValue.className = "result-value";
+    var resultDesc = document.getElementById("resultDesc");
+    var riskBar = document.getElementById("riskBar");
+    
+    if (percentage < 20) {
+        resultValue.classList.add("low");
+        resultDesc.textContent = "🟢 低风险 - 常规监测即可";
+    } else if (percentage < 50) {
+        resultValue.classList.add("medium");
+        resultDesc.textContent = "🟡 中风险 - 建议加强观察";
+    } else {
+        resultValue.classList.add("high");
+        resultDesc.textContent = "🔴 高风险 - 建议采取预防措施";
+    }
+    
+    // Animate risk bar
+    setTimeout(() => {
+        riskBar.style.width = Math.min(percentage, 100) + "%";
+    }, 100);
+    
+    // Scroll to result
+    resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
+
+// Allow Enter key to calculate
+document.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        calculate();
+    }
+});
 </script>
 
 </body>
